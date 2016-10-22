@@ -9,3 +9,22 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <string.h>
+
+
+#ifndef POOLTHREADS
+#define POOLTHREADS
+//estrutura para criar a pool de THREADSPOOL
+typedef struct pool_threads* thread;
+typedef struct pool_threads{
+  int max_pedidos; //
+  int num_threads;
+
+  pthread_t* my_threads;
+  int* ip;
+}poolthreads;
+#endif
+
+#ifndef CONFIG
+#define CONFIG
+//estrutura para criar memoria partilhada
+//parametros obtidos pelo config.txt

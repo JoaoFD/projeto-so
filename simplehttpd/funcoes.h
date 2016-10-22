@@ -10,7 +10,6 @@
 #include <sys/types.h>
 #include <string.h>
 
-
 #ifndef POOLTHREADS
 #define POOLTHREADS
 //estrutura para criar a pool de THREADSPOOL
@@ -28,3 +27,15 @@ typedef struct pool_threads{
 #define CONFIG
 //estrutura para criar memoria partilhada
 //parametros obtidos pelo config.txt
+typedef struct configuracoes* Config;
+typedef struct configuracoes{
+  int porto_servidor;
+  char* scheduling;
+  int threads;
+  char* ficheiros_permitidos;
+
+
+  Config next;
+  thread pool;
+}config;
+#endif

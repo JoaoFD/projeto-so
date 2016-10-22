@@ -1,6 +1,7 @@
 /* -- simplehttpd.c --
 	Sistemas Operativos 2016/2017
 	Joao Francisco Girao Duarte - 2011179637
+	Rita - 20
 */
 
 #include <stdio.h>
@@ -16,8 +17,6 @@
 #include <string.h>
 #include <signal.h>
 
-#include "funcoes.h"
-
 // Produce debug information
 #define DEBUG	  	1
 
@@ -29,6 +28,8 @@
 #define GET_EXPR	"GET /"
 #define CGI_EXPR	"cgi-bin/"
 #define SIZE_BUF	1024
+
+#include "funcoes.h"
 
 
 int  fireup(int port);
@@ -55,6 +56,65 @@ int main(int argc, char ** argv)
 	int port;
 
 	signal(SIGINT,catch_ctrlc);
+	pid_t pid_gConfig, pid_gEsta, pid_gPrincipal;
+
+
+
+//															ALTERACOES																\\
+//															ALTERACOES																\\
+//															ALTERACOES																\\
+//															ALTERACOES																\\
+//															ALTERACOES																\\
+//															ALTERACOES																\\
+
+	//Criar processos
+
+	//processo de gestão de configurações
+	pid_gConfig = fork();
+	if (pid_gConfig == 0){
+		le_config();
+		exit(0);
+	}
+
+	//processo de gestão de estatisticas
+	pid_gEsta = fork();
+	if (pid_gEsta == 0){
+		//chama funcao
+		//falta pipes
+		exit(0);
+	}
+
+
+	//processo principal
+	pid_gPrincipal = fork();
+	if (pid_gPrincipal == 0){
+		worker();
+		exit(0);
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//																																\\
+//																																\\
+//																																\\
+//																																\\
+//																																\\
+//																																\\
+
+
+
 
 	// Verify number of arguments
 	if (argc!=2) {
@@ -94,6 +154,8 @@ int main(int argc, char ** argv)
 		close(new_conn);
 
 	}
+
+	cleanup();
 
 }
 

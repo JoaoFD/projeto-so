@@ -16,6 +16,8 @@
 #include <string.h>
 #include <signal.h>
 
+#include "funcoes.h"
+
 // Produce debug information
 #define DEBUG	  	1
 

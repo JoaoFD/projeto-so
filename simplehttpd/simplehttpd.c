@@ -1,6 +1,7 @@
 /* -- simplehttpd.c --
 	Sistemas Operativos 2016/2017
 	Joao Francisco Girao Duarte - 2011179637
+	Rita Miguel Fernandes Lemos Fernandes - 2015197630
 */
 
 #include <stdio.h>
@@ -28,6 +29,8 @@
 #define CGI_EXPR	"cgi-bin/"
 #define SIZE_BUF	1024
 
+#include "funcoes.h"
+
 
 int  fireup(int port);
 void identify(int socket);
@@ -53,6 +56,45 @@ int main(int argc, char ** argv)
 	int port;
 
 	signal(SIGINT,catch_ctrlc);
+	pid_t pid_gConfig, pid_gEsta;
+	int pid_g[2];
+
+	//Criar processos
+	//processo de gestão de configurações
+	pid_g[0] = fork();
+	if (pid_g[0] == 0){
+		le_config();
+		exit(0);
+	}
+
+	//processo de gestão de estatisticas
+	pid_g[1] = fork();
+	if (pid_g[1] == 0){
+		funcEstatisticas();
+		exit(0);
+	}
+
+
+
+
+	//pool threads
+	for (i=0 ; i<config->threadpool ; i++){
+		id[i]=i;
+
+		if(pthread_create(&threads[i], NULL, worker, &id[i])!=0){
+			printf("Erro ao criar uma thread da pool de threads.\n");
+			cleanup();
+			exit(1);
+		}
+
+    }
+
+
+//																																\\
+//																																\\
+
+
+
 
 	// Verify number of arguments
 	if (argc!=2) {
@@ -92,6 +134,8 @@ int main(int argc, char ** argv)
 		close(new_conn);
 
 	}
+
+	cleanup();
 
 }
 

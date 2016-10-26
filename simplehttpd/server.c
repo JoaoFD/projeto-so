@@ -5,7 +5,7 @@
 #include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h> 
+#include <sys/types.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <sys/stat.h>
@@ -137,8 +137,6 @@ void le_config(){
 }
 
 
-
-
 //Associar uma zona de memória partilhada, que retorna -1 em caso de erro
 //parametro do meio, é o parâmetro onde começa a memória partilhada
 
@@ -149,10 +147,10 @@ void associa_zona_memoria(){
 		exit(1);
 	}
 }
-	
+
 
 void mapear_ficheiro(){
-	int fp; 
+	int fp;
 	char* f_ip;
 
 	fp = open("localdns.txt", O_WRONLY, S_IWRITE);
@@ -168,4 +166,142 @@ void mapear_ficheiro(){
 		printf("Erro no mapeamento de memória.\n");
 		exit(-1);
 	}
+}
+
+//Cria a pool de n_threads
+void cria_pool(int n_threads) {
+	int i;
+	poolthreads *pool;
+
+	conf = (config *) malloc(sizeof(config));
+
+
+  	pool = (poolthreads*) malloc(sizeof(poolthreads));
+  	if (pool == NULL) {
+    	printf("Out of memory creating a new threadpool!\n");
+    	exit(1);
+  	}
+
+  	//Inicializa
+  	pool->num_threads = n_threads;
+  	conf->pool = pool;
+
+
+  	//inicializa mutex e as variaveis de condição
+ 	if(pthread_mutex_init(&filas_bloq,NULL)) {
+ 		printf("Mutex initiation error!\n");
+		exit(1);
+	}
+
+  	//make threads
+	pool->ip = (int *)malloc(sizeof(int)*n_threads);
+  	for (i=0; i<n_threads; i++){
+
+  		pool->ip[i]=i;
+	 	if(pthread_create(&(pool->my_threads[i]),NULL,worker,&(pool->ip[i])) != 0) {
+	    	printf("Thread initiation error!\n");
+			exit(1);
+	  	}
+  	}
+
+  	for(i=0; i<n_threads; i++){
+  		if (pthread_join(pool->my_threads[i], NULL) != 0){
+  			printf("Erro ao esperar!\n");
+  			exit(0);
+  		}
+  	}
+}
+
+//---------- tratamento HTML comeca aqui ----------
+//Envia a pagina HTML para o cliente
+void send_page(int socket) {
+  FILE * fp;
+
+  /* Searchs for page in directory htdocs*/
+  sprintf(buf_tmp,"htdocs/%s",req_buf);
+
+  #if DEBUG
+  printf("send_page: searching for %s\n",buf_tmp);
+  #endif
+
+  /* Verifies if file exists*/
+  if((fp=fopen(buf_tmp,"rt"))==NULL) {
+    /* Page not found, send error to client*/
+    printf("send_page: page %s not found, alerting client\n",buf_tmp);
+    not_found(socket);
+  }
+  else {
+    /* Page found, send to client*/
+
+    /* First send HTTP header back to client*/
+    send_header(socket);
+
+    printf("send_page: sending page %s to client\n",buf_tmp);
+    while(fgets(buf_tmp,SIZE_BUF,fp))
+      send(socket,buf_tmp,strlen(buf_tmp),0);
+
+      /* Close file*/
+      fclose(fp);
+    }
+
+    return;
+
+	}
+
+	/* Sends a 404 not found status message to client (page not found)*/
+	void not_found(int socket)
+	{
+	  sprintf(buf,"HTTP/1.0 404 NOT FOUND\r\n");
+	  send(socket,buf, strlen(buf), 0);
+	  sprintf(buf,SERVER_STRING);
+	  send(socket,buf, strlen(buf), 0);
+	  sprintf(buf,"Content-Type: text/html\r\n");
+	  send(socket,buf, strlen(buf), 0);
+	  sprintf(buf,"\r\n");
+	  send(socket,buf, strlen(buf), 0);
+	  sprintf(buf,"<HTML><TITLE>Not Found</TITLE>\r\n");
+	  send(socket,buf, strlen(buf), 0);
+	  sprintf(buf,"<BODY><P>Resource unavailable or nonexistent.\r\n");
+	  send(socket,buf, strlen(buf), 0);
+	  sprintf(buf,"</BODY></HTML>\r\n");
+	  send(socket,buf, strlen(buf), 0);
+
+	  return;
+	}
+
+	/* Send a 5000 internal server error (script not configured for execution)*/
+	void cannot_execute(int socket){
+
+	  sprintf(buf,"HTTP/1.0 500 Internal Server Error\r\n");
+	  send(socket,buf, strlen(buf), 0);
+	  sprintf(buf,"Content-type: text/html\r\n");
+	  send(socket,buf, strlen(buf), 0);
+	  sprintf(buf,"\r\n");
+	  send(socket,buf, strlen(buf), 0);
+	  sprintf(buf,"<P>Error prohibited CGI execution.\r\n");
+	  send(socket,buf, strlen(buf), 0);
+
+	  return;
+	}
+
+	//send message header before html page to client
+	void send_header(int socket){
+    #if DEBUG
+    printf("send_header: sending HTTP header to client\n");
+    #endif
+    sprintf(buf,HEADER_1);
+    send(socket,buf,strlen(HEADER_1),0);
+    sprintf(buf,SERVER_STRING);
+    send(socket,buf,strlen(SERVER_STRING),0);
+    sprintf(buf,HEADER_2);
+    send(socket,buf,strlen(HEADER_2),0);
+
+    return;
+  }
+//---------- tratamento HTML acaba aqui ----------
+
+//worker temporario, só para ir metendo funcoes
+void worker(void* my_id){
+	//procura pasta com ficheiro html e envia para o cliente
+	send_page(recived_request.socket_id);
 }

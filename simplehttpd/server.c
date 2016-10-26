@@ -38,7 +38,7 @@ sem_t *empty;
 sem_t *full;
 
 
-//Inicializar programa
+//Inicializar buffer
 void init(){
 	if((buff_id=shmget(IPC_PRIVATE,sizeof(buff),IPC_CREAT|0777))==-1){
 	    perror("Erro na criação do buffer");

@@ -60,6 +60,7 @@ int main(int argc, char ** argv)
 	int pid_g[2];
 
 	//Criar processos
+
 	//processo de gestão de configurações
 	pid_g[0] = fork();
 	if (pid_g[0] == 0){
@@ -77,21 +78,10 @@ int main(int argc, char ** argv)
 
 
 
-	//pool threads
-	for (i=0 ; i<config->threadpool ; i++){
-		id[i]=i;
-
-		if(pthread_create(&threads[i], NULL, worker, &id[i])!=0){
-			printf("Erro ao criar uma thread da pool de threads.\n");
-			cleanup();
-			exit(1);
-		}
-
-    }
 
 
-//																																\\
-//																																\\
+
+
 
 
 

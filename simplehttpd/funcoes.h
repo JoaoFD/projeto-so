@@ -28,6 +28,7 @@ typedef struct{
   int in, out, size;
 }buffer;
 
+
 //estrutura para criar a pool de THREADSPOOL
 typedef struct pool_threads* thread;
 typedef struct pool_threads{
@@ -41,7 +42,6 @@ typedef struct pool_threads{
 
 #ifndef CONFIG
 #define CONFIG
-
 //estrutura para criar memoria partilhada
 //parametros obtidos pelo config.txt
 typedef struct configuracoes* Config;
@@ -49,6 +49,7 @@ typedef struct configuracoes{
   int porto_servidor;
   char* scheduling;
   int threadpool;
+  int threads;
   char* ficheiros_permitidos;
 
 
